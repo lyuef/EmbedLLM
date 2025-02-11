@@ -15,21 +15,6 @@ and [Kannan Ramchandran](https://people.eecs.berkeley.edu/~kannanr/)
 
 Dataset Link: https://huggingface.co/datasets/RZ412/EmbedLLM
 
-## Usage
+## update0
 
-Run the following to download the correctness data we used to train our model:
-```sh
-python download_data.py
-```
-
-To train a KNN and check its performance on correctness forecasting, simply do:
-```sh
-python knn.py
-```
-
-To train our Matrix Factorization model and see its performance, simply do:
-```sh
-python mf.py
-```
-
-For customized configuration, please see the argparse section in the code. 
+分割数据集，前4/5的模型和后1/5的模型分别训练测试
