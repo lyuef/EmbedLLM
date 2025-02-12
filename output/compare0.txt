@@ -1,0 +1,211 @@
+Loading dataset...
+C:\Users\21296\AppData\Local\Temp\ipykernel_112516\745729245.py:163: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  question_embeddings = torch.load(args.question_embedding_path)
+Initializing model...
+C:\Users\21296\AppData\Local\Temp\ipykernel_112516\745729245.py:139: FutureWarning: You are using `torch.load` with `weights_only=False` (the current default value), which uses the default pickle module implicitly. It is possible to construct malicious pickle data which will execute arbitrary code during unpickling (See https://github.com/pytorch/pytorch/blob/main/SECURITY.md#untrusted-models for more details). In a future release, the default value for `weights_only` will be flipped to `True`. This limits the functions that could be executed during unpickling. Arbitrary objects will no longer be allowed to be loaded via this mode unless they are explicitly allowlisted by the user via `torch.serialization.add_safe_globals`. We recommend you start setting `weights_only=True` for any use case where you don't have full control of the loaded file. Please open an issue on GitHub for any issues related to this experimental feature.
+  net.load_state_dict(torch.load(path, map_location=device))
+Model loaded from data/saved_model.pth
+Model loaded from data/model_with_fir90.pth
+Comparing models...
+  0%|          | 0/50 [00:00<?, ?it/s]
+Epoch 1/50
+ 24%|██▍       | 12/50 [05:17<16:45, 26.46s/it]
+Model0: Test Loss: 0.9835062770992958 , Test Accuracy: 0.4915092114573233
+  2%|▏         | 1/50 [00:17<13:55, 17.05s/it]
+Model1: Test Loss: 0.9849386494871787 , Test Accuracy: 0.49194161272570036
+Epoch 2/50
+Model0: Test Loss: 0.983217965201039 , Test Accuracy: 0.4915092114573233
+  4%|▍         | 2/50 [00:33<13:17, 16.61s/it]
+Model1: Test Loss: 0.9850033150987838 , Test Accuracy: 0.49194161272570036
+Epoch 3/50
+Model0: Test Loss: 0.9830180514317713 , Test Accuracy: 0.4915092114573233
+  6%|▌         | 3/50 [00:50<13:08, 16.77s/it]
+Model1: Test Loss: 0.9836033988778091 , Test Accuracy: 0.49194161272570036
+Epoch 4/50
+Model0: Test Loss: 0.9845355633760374 , Test Accuracy: 0.4915092114573233
+  8%|▊         | 4/50 [01:07<12:50, 16.76s/it]
+Model1: Test Loss: 0.9837381571899149 , Test Accuracy: 0.49194161272570036
+Epoch 5/50
+Model0: Test Loss: 0.9826329156610744 , Test Accuracy: 0.4915092114573233
+ 10%|█         | 5/50 [01:23<12:32, 16.71s/it]
+Model1: Test Loss: 0.9834759286678407 , Test Accuracy: 0.49194161272570036
+Epoch 6/50
+Model0: Test Loss: 0.9826166743817808 , Test Accuracy: 0.4915092114573233
+ 12%|█▏        | 6/50 [01:38<11:46, 16.07s/it]
+Model1: Test Loss: 0.9825377996501634 , Test Accuracy: 0.49194161272570036
+Epoch 7/50
+Model0: Test Loss: 0.9808435046437582 , Test Accuracy: 0.4915092114573233
+ 14%|█▍        | 7/50 [01:47<09:49, 13.72s/it]
+Model1: Test Loss: 0.9824823247408254 , Test Accuracy: 0.49194161272570036
+Epoch 8/50
+Model0: Test Loss: 0.984569803780394 , Test Accuracy: 0.4915092114573233
+ 16%|█▌        | 8/50 [01:53<07:48, 11.14s/it]
+Model1: Test Loss: 0.9841037391257326 , Test Accuracy: 0.49194161272570036
+Epoch 9/50
+Model0: Test Loss: 0.9849139468756551 , Test Accuracy: 0.4915092114573233
+ 18%|█▊        | 9/50 [01:58<06:25,  9.41s/it]
+Model1: Test Loss: 0.9848178315798083 , Test Accuracy: 0.49194161272570036
+Epoch 10/50
+Model0: Test Loss: 0.9840827389468705 , Test Accuracy: 0.4915092114573233
+ 20%|██        | 10/50 [02:03<05:26,  8.17s/it]
+Model1: Test Loss: 0.9845041104928044 , Test Accuracy: 0.49194161272570036
+Epoch 11/50
+Model0: Test Loss: 0.9845398444262667 , Test Accuracy: 0.4915092114573233
+ 22%|██▏       | 11/50 [02:09<04:50,  7.45s/it]
+Model1: Test Loss: 0.9848848632454213 , Test Accuracy: 0.49194161272570036
+Epoch 12/50
+Model0: Test Loss: 0.9821232115654748 , Test Accuracy: 0.4915092114573233
+ 24%|██▍       | 12/50 [02:15<04:22,  6.91s/it]
+Model1: Test Loss: 0.9844052080757079 , Test Accuracy: 0.49194161272570036
+Epoch 13/50
+Model0: Test Loss: 0.9841774414881442 , Test Accuracy: 0.4915092114573233
+ 26%|██▌       | 13/50 [02:21<04:02,  6.55s/it]
+Model1: Test Loss: 0.9829393806358551 , Test Accuracy: 0.49194161272570036
+Epoch 14/50
+Model0: Test Loss: 0.9816321303982596 , Test Accuracy: 0.4915092114573233
+ 28%|██▊       | 14/50 [02:26<03:46,  6.30s/it]
+Model1: Test Loss: 0.9844463810942833 , Test Accuracy: 0.49194161272570036
+Epoch 15/50
+Model0: Test Loss: 0.9824532315136174 , Test Accuracy: 0.4915092114573233
+ 30%|███       | 15/50 [02:32<03:33,  6.11s/it]
+Model1: Test Loss: 0.9852255366346446 , Test Accuracy: 0.49194161272570036
+Epoch 16/50
+Model0: Test Loss: 0.9839132695787998 , Test Accuracy: 0.4915092114573233
+ 32%|███▏      | 16/50 [02:38<03:23,  5.98s/it]
+Model1: Test Loss: 0.9831183546072232 , Test Accuracy: 0.49194161272570036
+Epoch 17/50
+Model0: Test Loss: 0.9840096235993792 , Test Accuracy: 0.4915092114573233
+ 34%|███▍      | 17/50 [02:43<03:13,  5.86s/it]
+Model1: Test Loss: 0.9818364503782948 , Test Accuracy: 0.49194161272570036
+Epoch 18/50
+Model0: Test Loss: 0.9845801321239747 , Test Accuracy: 0.4915092114573233
+ 36%|███▌      | 18/50 [02:49<03:06,  5.81s/it]
+Model1: Test Loss: 0.9839026321326759 , Test Accuracy: 0.49194161272570036
+Epoch 19/50
+Model0: Test Loss: 0.9833574536217906 , Test Accuracy: 0.4915092114573233
+ 38%|███▊      | 19/50 [02:55<02:59,  5.78s/it]
+Model1: Test Loss: 0.9836869473358493 , Test Accuracy: 0.49194161272570036
+Epoch 20/50
+Model0: Test Loss: 0.9831939655678736 , Test Accuracy: 0.4915092114573233
+ 40%|████      | 20/50 [03:01<02:53,  5.78s/it]
+Model1: Test Loss: 0.9835171624672525 , Test Accuracy: 0.49194161272570036
+Epoch 21/50
+Model0: Test Loss: 0.9835285704704279 , Test Accuracy: 0.4915092114573233
+ 42%|████▏     | 21/50 [03:06<02:47,  5.78s/it]
+Model1: Test Loss: 0.9845444789650449 , Test Accuracy: 0.49194161272570036
+Epoch 22/50
+Model0: Test Loss: 0.9834293945395673 , Test Accuracy: 0.4915092114573233
+ 44%|████▍     | 22/50 [03:12<02:42,  5.81s/it]
+Model1: Test Loss: 0.9843642589865298 , Test Accuracy: 0.49194161272570036
+Epoch 23/50
+Model0: Test Loss: 0.9835212555767378 , Test Accuracy: 0.4915092114573233
+ 46%|████▌     | 23/50 [03:18<02:35,  5.76s/it]
+Model1: Test Loss: 0.9845879736516225 , Test Accuracy: 0.49194161272570036
+Epoch 24/50
+Model0: Test Loss: 0.9837731421595178 , Test Accuracy: 0.4915092114573233
+ 48%|████▊     | 24/50 [03:24<02:30,  5.79s/it]
+Model1: Test Loss: 0.983986206982395 , Test Accuracy: 0.49194161272570036
+Epoch 25/50
+Model0: Test Loss: 0.9827873381732622 , Test Accuracy: 0.4915092114573233
+ 50%|█████     | 25/50 [03:30<02:25,  5.81s/it]
+Model1: Test Loss: 0.9825847156580341 , Test Accuracy: 0.49194161272570036
+Epoch 26/50
+Model0: Test Loss: 0.982741108748919 , Test Accuracy: 0.4915092114573233
+ 52%|█████▏    | 26/50 [03:36<02:21,  5.88s/it]
+Model1: Test Loss: 0.985681664422297 , Test Accuracy: 0.49194161272570036
+Epoch 27/50
+Model0: Test Loss: 0.9823737449748964 , Test Accuracy: 0.4915092114573233
+ 54%|█████▍    | 27/50 [03:41<02:14,  5.85s/it]
+Model1: Test Loss: 0.9850046722708816 , Test Accuracy: 0.49194161272570036
+Epoch 28/50
+Model0: Test Loss: 0.9835592903847583 , Test Accuracy: 0.4915092114573233
+ 56%|█████▌    | 28/50 [03:47<02:09,  5.87s/it]
+Model1: Test Loss: 0.9851082368180569 , Test Accuracy: 0.49194161272570036
+Epoch 29/50
+Model0: Test Loss: 0.9836376620749795 , Test Accuracy: 0.4915092114573233
+ 58%|█████▊    | 29/50 [03:53<02:03,  5.87s/it]
+Model1: Test Loss: 0.9842193310807913 , Test Accuracy: 0.49194161272570036
+Epoch 30/50
+Model0: Test Loss: 0.9825984569255554 , Test Accuracy: 0.4915092114573233
+ 60%|██████    | 30/50 [03:59<01:55,  5.78s/it]
+Model1: Test Loss: 0.9837371603042225 , Test Accuracy: 0.49194161272570036
+Epoch 31/50
+Model0: Test Loss: 0.9838833969973141 , Test Accuracy: 0.4915092114573233
+ 62%|██████▏   | 31/50 [04:04<01:49,  5.74s/it]
+Model1: Test Loss: 0.9838031267057022 , Test Accuracy: 0.49194161272570036
+Epoch 32/50
+Model0: Test Loss: 0.9821145922830449 , Test Accuracy: 0.4915092114573233
+ 64%|██████▍   | 32/50 [04:10<01:44,  5.79s/it]
+Model1: Test Loss: 0.9831958441755683 , Test Accuracy: 0.49194161272570036
+Epoch 33/50
+Model0: Test Loss: 0.9838070294751996 , Test Accuracy: 0.4915092114573233
+ 66%|██████▌   | 33/50 [04:21<02:03,  7.25s/it]
+Model1: Test Loss: 0.9843123745451546 , Test Accuracy: 0.49194161272570036
+Epoch 34/50
+Model0: Test Loss: 0.9835524993259085 , Test Accuracy: 0.4915092114573233
+ 68%|██████▊   | 34/50 [04:38<02:40, 10.05s/it]
+Model1: Test Loss: 0.9843618949318916 , Test Accuracy: 0.49194161272570036
+Epoch 35/50
+Model0: Test Loss: 0.9833196667356028 , Test Accuracy: 0.4915092114573233
+ 70%|███████   | 35/50 [04:55<03:06, 12.42s/it]
+Model1: Test Loss: 0.9837784696798061 , Test Accuracy: 0.49194161272570036
+Epoch 36/50
+Model0: Test Loss: 0.9823711281999383 , Test Accuracy: 0.4915092114573233
+ 72%|███████▏  | 36/50 [05:12<03:11, 13.71s/it]
+Model1: Test Loss: 0.9861747709509368 , Test Accuracy: 0.49194161272570036
+Epoch 37/50
+Model0: Test Loss: 0.9830922544363356 , Test Accuracy: 0.4915092114573233
+ 74%|███████▍  | 37/50 [05:30<03:12, 14.79s/it]
+Model1: Test Loss: 0.9836621223629051 , Test Accuracy: 0.49194161272570036
+Epoch 38/50
+Model0: Test Loss: 0.9829890145867866 , Test Accuracy: 0.4915092114573233
+ 76%|███████▌  | 38/50 [05:46<03:04, 15.33s/it]
+Model1: Test Loss: 0.9853064659184831 , Test Accuracy: 0.49194161272570036
+Epoch 39/50
+Model0: Test Loss: 0.9823251434984365 , Test Accuracy: 0.4915092114573233
+ 78%|███████▊  | 39/50 [06:03<02:52, 15.72s/it]
+Model1: Test Loss: 0.9855003739812875 , Test Accuracy: 0.49194161272570036
+Epoch 40/50
+Model0: Test Loss: 0.9827661940397877 , Test Accuracy: 0.4915092114573233
+ 80%|████████  | 40/50 [06:20<02:40, 16.04s/it]
+Model1: Test Loss: 0.9828557450052996 , Test Accuracy: 0.49194161272570036
+Epoch 41/50
+Model0: Test Loss: 0.9821901084735755 , Test Accuracy: 0.4915092114573233
+ 82%|████████▏ | 41/50 [06:36<02:25, 16.21s/it]
+Model1: Test Loss: 0.9837896569525753 , Test Accuracy: 0.49194161272570036
+Epoch 42/50
+Model0: Test Loss: 0.9842654745322409 , Test Accuracy: 0.4915092114573233
+ 84%|████████▍ | 42/50 [06:53<02:10, 16.31s/it]
+Model1: Test Loss: 0.9845844743549145 , Test Accuracy: 0.49194161272570036
+Epoch 43/50
+Model0: Test Loss: 0.9829312464004949 , Test Accuracy: 0.4915092114573233
+ 86%|████████▌ | 43/50 [07:09<01:54, 16.37s/it]
+Model1: Test Loss: 0.9843274457933467 , Test Accuracy: 0.49194161272570036
+Epoch 44/50
+Model0: Test Loss: 0.9848176324425942 , Test Accuracy: 0.4915092114573233
+ 88%|████████▊ | 44/50 [07:26<01:38, 16.42s/it]
+Model1: Test Loss: 0.9827889724579894 , Test Accuracy: 0.49194161272570036
+Epoch 45/50
+Model0: Test Loss: 0.9833723381288603 , Test Accuracy: 0.4915092114573233
+ 90%|█████████ | 45/50 [07:42<01:22, 16.43s/it]
+Model1: Test Loss: 0.9833035546155867 , Test Accuracy: 0.49194161272570036
+Epoch 46/50
+Model0: Test Loss: 0.9832212185752839 , Test Accuracy: 0.4915092114573233
+ 92%|█████████▏| 46/50 [07:54<01:00, 15.13s/it]
+Model1: Test Loss: 0.9833885194270653 , Test Accuracy: 0.49194161272570036
+Epoch 47/50
+Model0: Test Loss: 0.9823895959772402 , Test Accuracy: 0.4915092114573233
+ 94%|█████████▍| 47/50 [08:00<00:36, 12.27s/it]
+Model1: Test Loss: 0.9843049768775622 , Test Accuracy: 0.49194161272570036
+Epoch 48/50
+Model0: Test Loss: 0.9826366544822629 , Test Accuracy: 0.4915092114573233
+ 96%|█████████▌| 48/50 [08:06<00:20, 10.30s/it]
+Model1: Test Loss: 0.9839055600095468 , Test Accuracy: 0.49194161272570036
+Epoch 49/50
+Model0: Test Loss: 0.982911517420837 , Test Accuracy: 0.4915092114573233
+ 98%|█████████▊| 49/50 [08:11<00:08,  8.88s/it]
+Model1: Test Loss: 0.9836936792133583 , Test Accuracy: 0.49194161272570036
+Epoch 50/50
+Model0: Test Loss: 0.9832669977415889 , Test Accuracy: 0.4915092114573233
+100%|██████████| 50/50 [08:17<00:00,  9.95s/it]
+Model1: Test Loss: 0.9844157911389781 , Test Accuracy: 0.49194161272570036
