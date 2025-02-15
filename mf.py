@@ -141,11 +141,6 @@ def train(net, train_loader, test_loader, num_epochs, lr, device, weight_decay=1
         torch.save(net.state_dict(), save_path)
         print(f"Model saved to {save_path}")
 
-def load_model(net, path, device):
-    net.load_state_dict(torch.load(path, map_location=device))
-    print(f"Model loaded from {path}")
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("--embedding_dim", type=int, default=232)

@@ -17,4 +17,8 @@ Dataset Link: https://huggingface.co/datasets/RZ412/EmbedLLM
 
 ## update0
 
-分割数据集，前4/5的模型和后1/5的模型分别训练测试
+Split the data set,train and test seprately
+
+## update1 
+
+using dynamic model embeddings 
