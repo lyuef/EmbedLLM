@@ -20,8 +20,9 @@ def test(net,test_loader,device) :
 
 if __name__ == "__main__":
     parser = pm.parser_make()
-    parser.add_argument("--loader",type = int,default=0)
-    args = parser.parse_args(["--loader","3","--output_save_path","output/result.txt","--model_load_path","data/fir90_dyn.pth","--embedding_dim","1024"])
+    parser.add_argument("--model_use_l",type = int,default=0 )
+    parser.add_argument("--model_use_r",type = int ,default= 112)
+    args = parser.parse_args(["--model_use_l","90","--model_use_r","112","--output_save_path","output/result.txt","--model_load_path","data/fir90_dyn.pth","--embedding_dim","1024"])
 
     captured_output = io.StringIO()
     with redirect_stdout(captured_output):
@@ -34,27 +35,18 @@ if __name__ == "__main__":
         num_models = len(test_data["model_id"].unique())
         model_names = list(np.unique(list(test_data["model_name"])))
 
-        train_loader0, test_loader0 = lpd.load_and_process_data(train_data, test_data, batch_size=args.batch_size , model_use_l = 0,model_use_r = 90)
-        train_loader1, test_loader1 = lpd.load_and_process_data(train_data, test_data, batch_size=args.batch_size , model_use_l = 90,model_use_r = 112)
+        train_loader, test_loader = lpd.load_and_process_data(train_data, test_data, batch_size=args.batch_size , model_use_l = args.model_use_l,model_use_r = args.model_use_r)
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-
-        loader = train_loader0 
-        if args.loader == 1:
-            loader = train_loader1 
-        elif args.loader == 2 :
-            loader = test_loader0
-        elif args.loader == 3 :
-            loader = test_loader1
-        print(f'loader : {args.loader}')
+        print(f'model_use_l : {args.model_use_l} , model_use_r : {args.model_use_r}')
 
         print("Initializing model...")
         model = Embedllm_dynamic.TextMF_dyn(question_embeddings=question_embeddings, 
                         model_embedding_dim=args.embedding_dim, alpha=args.alpha,
                         num_models=num_models, num_prompts=num_prompts)
         lm.load_model(model,args.model_load_path,device)
-
+        model.to(device)
         print("Testing models...")
-        test(model,loader,device=device)
+        test(model,test_loader,device=device)
 
     with open(args.output_save_path, "a", encoding="utf-8") as f:
         f.write(captured_output.getvalue())

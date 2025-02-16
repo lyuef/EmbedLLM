@@ -5,7 +5,7 @@ class TextMF_dyn(nn.Module):
         super(TextMF_dyn, self).__init__()
         # Model embedding network
         if is_dyn :
-            self.P = nn.Embedding(num_models, model_embedding_dim).requires_grad_(False) 
+            self.P = nn.Embedding(num_models, model_embedding_dim).requires_grad_(True) 
             self.P.weight.data.copy_(model_embeddings)
         else : 
             self.P = nn.Embedding(num_models, model_embedding_dim)
