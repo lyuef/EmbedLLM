@@ -1,14 +1,14 @@
 import torch
 from torch import nn
 class TextMF_dyn(nn.Module):
-    def __init__(self, question_embeddings, model_embedding_dim, alpha, num_models, num_prompts, text_dim=768, num_classes=2,model_embeddings = None,is_dyn = False):
+    def __init__(self, question_embeddings, model_embedding_dim, alpha, num_models, num_prompts, text_dim=768, num_classes=2,model_embeddings = None,is_dyn = False,frozen = False):
         super(TextMF_dyn, self).__init__()
         # Model embedding network
         if is_dyn :
-            self.P = nn.Embedding(num_models, model_embedding_dim).requires_grad_(True) 
+            self.P = nn.Embedding(num_models, model_embedding_dim).requires_grad_(False if frozen else True) 
             self.P.weight.data.copy_(model_embeddings)
         else : 
-            self.P = nn.Embedding(num_models, model_embedding_dim)
+            self.P = nn.Embedding(num_models, model_embedding_dim).requires_grad_(False if frozen else True)
         # Question embedding network
         self.Q = nn.Embedding(num_prompts, text_dim).requires_grad_(False)
         self.Q.weight.data.copy_(question_embeddings)

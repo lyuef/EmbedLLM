@@ -22,13 +22,13 @@ if __name__ == "__main__":
     parser = pm.parser_make()
     parser.add_argument("--model_use_l",type = int,default=0 )
     parser.add_argument("--model_use_r",type = int ,default= 112)
-    args = parser.parse_args(["--model_use_l","90","--model_use_r","112","--output_save_path","output/result.txt","--model_load_path","data/fir90_dyn.pth","--embedding_dim","1024"])
+    args = parser.parse_args(["--model_use_l","90","--model_use_r","112","--output_save_path","output/result.txt","--model_load_path","data/saved_model.pth","--embedding_dim","232"])
 
     captured_output = io.StringIO()
     with redirect_stdout(captured_output):
     
         print("Loading dataset...")
-        train_data = pd.read_csv(args.train_data_path)
+        train_data = pd.read_csv(args.train_data_path) 
         test_data = pd.read_csv(args.test_data_path)
         question_embeddings = torch.load(args.question_embedding_path)
         num_prompts = question_embeddings.shape[0]

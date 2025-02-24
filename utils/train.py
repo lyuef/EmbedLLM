@@ -7,6 +7,7 @@ def train(net, train_loader, test_loader, num_epochs, lr, device, weight_decay=1
     optimizer = Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     loss_fn = nn.CrossEntropyLoss()
     progress_bar = tqdm(total=num_epochs)
+    max_accuracy = 0
 
     for epoch in range(num_epochs):
         net.train()
@@ -25,11 +26,15 @@ def train(net, train_loader, test_loader, num_epochs, lr, device, weight_decay=1
         print(f"Epoch {epoch + 1}/{num_epochs}, Train Loss: {train_loss}")
 
         test_loss, test_accuracy = eva.evaluate(net, test_loader, device)
+        max_accuracy = max(max_accuracy,test_accuracy)
         print(f"Test Loss: {test_loss}, Test Accuracy: {test_accuracy}")
 
         progress_bar.set_postfix(train_loss=train_loss, test_loss=test_loss, test_acc=test_accuracy)
         progress_bar.update(1)
-    
+
+    print(f'Max accuracy : {max_accuracy}')
+
+
     if save_path:
         torch.save(net.state_dict(), save_path)
         print(f"Model saved to {save_path}")
