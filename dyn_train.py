@@ -18,8 +18,8 @@ if __name__ == "__main__" :
     num_models = len(test_data["model_id"].unique())
     model_names = list(np.unique(list(test_data["model_name"])))
 
-    train_loader = lpd.load_and_process_train_data(train_data=train_data,batch_size=args.batch_size,model_use_l=0,model_use_r=90)
-    test_loader = lpd.load_and_process_test_data(test_data=test_data,batch_size=args.batch_size,model_use_l=90,model_use_r=112)
+    train_loader , test_loader = lpd.load_and_process_data(train_data=train_data,test_data=test_data,batch_size=args.batch_size,model_use_train_l=args.model_use_train_l,model_use_train_r=args.model_use_train_r,model_use_test_l=args.model_use_test_l,model_use_test_r=args.model_use_test_r)
+    
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model_embeddings = torch.load("data/model_embeddings_static.pth",map_location=device)
     
@@ -27,12 +27,17 @@ if __name__ == "__main__" :
     with redirect_stdout(captured_output):
         print("Initializing model...")
         model = TextMF_dyn(question_embeddings=question_embeddings, 
-                    model_embedding_dim=args.embedding_dim, alpha=args.alpha,
-                    num_models=num_models, num_prompts=num_prompts,model_embeddings=model_embeddings,is_dyn=True,frozen = False)
+                   model_embedding_dim=args.embedding_dim, alpha=args.alpha,
+                   num_models=num_models, num_prompts=num_prompts,model_embeddings=model_embeddings,is_dyn=args.is_dyn,frozen = args.frozen)
+        # model = TextMF(question_embeddings=question_embeddings, 
+        #          model_embedding_dim=args.embedding_dim, alpha=args.alpha,
+        #          num_models=num_models, num_prompts=num_prompts)
         model.to(device)
+        
+        print(f'train_l : {args.model_use_train_l} , train_r : {args.model_use_train_r} , test_l : {args.model_use_test_l} , test_r : {args.model_use_test_r}')
 
         print("Trainging ... ")
         tr.train(model, train_loader, test_loader, num_epochs=args.num_epochs, lr=args.learning_rate,
             device=device, save_path=args.model_save_path)
-    with open(args.output_save_path, "a", encoding="utf-8") as f:
+    with open(args.output_save_path, "w", encoding="utf-8") as f:
         f.write(captured_output.getvalue())

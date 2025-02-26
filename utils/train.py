@@ -38,3 +38,5 @@ def train(net, train_loader, test_loader, num_epochs, lr, device, weight_decay=1
     if save_path:
         torch.save(net.state_dict(), save_path)
         print(f"Model saved to {save_path}")
+    
+    return max_accuracy
