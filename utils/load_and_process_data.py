@@ -3,13 +3,14 @@ import torch
 from torch.utils.data import Dataset,DataLoader
 import pandas as pd 
 
-def load_and_process_data(train_data, test_data, batch_size=64 , model_use_train_l = 0,model_use_train_r = 112 , model_use_test_l = 0 , model_use_test_r = 112):
+def load_and_process_data(train_data, test_data, batch_size=64 , model_use_train_l = 0,model_use_train_r = 112 , model_use_test_l = 0 , model_use_test_r = 112,shuffle = True):
     
     num_prompts = int(max(max(train_data["prompt_id"]), max(test_data["prompt_id"]))) + 1
     
 
     model_ids = test_data["model_id"].unique()
-    model_ids = model_ids[torch.randperm(len(model_ids))]
+    if shuffle :
+        model_ids = model_ids[torch.randperm(len(model_ids))]
 
     train_selected_model_ids = model_ids[model_use_train_l:model_use_train_r]
     test_selected_model_ids = model_ids[model_use_test_l:model_use_test_r]

@@ -1,0 +1,154 @@
+Initializing model...
+train_l : 0 , train_r : 112 , test_l : 0 , test_r : 90
+Trainging ... 
+Epoch 1/50, Train Loss: 0.6857432834064199
+number of samples : 312210
+Test Loss: 0.6622656393492536, Test Accuracy: 0.6187854328817143
+Epoch 2/50, Train Loss: 0.6473579293319889
+number of samples : 312210
+Test Loss: 0.6511271895866239, Test Accuracy: 0.6274654879728387
+Epoch 3/50, Train Loss: 0.6280887374315477
+number of samples : 312210
+Test Loss: 0.6390533141317642, Test Accuracy: 0.6408090708177189
+Epoch 4/50, Train Loss: 0.6113834435733109
+number of samples : 312210
+Test Loss: 0.6269134493137757, Test Accuracy: 0.6532878511258448
+Epoch 5/50, Train Loss: 0.5976468634522224
+number of samples : 312210
+Test Loss: 0.6174027155403339, Test Accuracy: 0.663793600461228
+Epoch 6/50, Train Loss: 0.5874401225607944
+number of samples : 312210
+Test Loss: 0.6108496561762441, Test Accuracy: 0.6715479965407899
+Epoch 7/50, Train Loss: 0.5800162230048906
+number of samples : 312210
+Test Loss: 0.606581744968706, Test Accuracy: 0.6774062329842093
+Epoch 8/50, Train Loss: 0.5746309465968155
+number of samples : 312210
+Test Loss: 0.6041368491522633, Test Accuracy: 0.6799269722302297
+Epoch 9/50, Train Loss: 0.5706156292151394
+number of samples : 312210
+Test Loss: 0.6027596095504754, Test Accuracy: 0.681695012972038
+Epoch 10/50, Train Loss: 0.5678210308794303
+number of samples : 312210
+Test Loss: 0.6019801168453075, Test Accuracy: 0.6829826078600941
+Epoch 11/50, Train Loss: 0.5658519436443805
+number of samples : 312210
+Test Loss: 0.6014715617030104, Test Accuracy: 0.6840940392684411
+Epoch 12/50, Train Loss: 0.5643951531841559
+number of samples : 312210
+Test Loss: 0.6019020488904329, Test Accuracy: 0.6845520643156849
+Epoch 13/50, Train Loss: 0.5633546590757063
+number of samples : 312210
+Test Loss: 0.6017061968272182, Test Accuracy: 0.685195861759713
+Epoch 14/50, Train Loss: 0.5625360026851625
+number of samples : 312210
+Test Loss: 0.6010948468772771, Test Accuracy: 0.6854649114378143
+Epoch 15/50, Train Loss: 0.5619340939862205
+number of samples : 312210
+Test Loss: 0.6018270376784656, Test Accuracy: 0.6855289708849812
+Epoch 16/50, Train Loss: 0.5614627927733696
+number of samples : 312210
+Test Loss: 0.601662550659512, Test Accuracy: 0.6857243521988405
+Epoch 17/50, Train Loss: 0.5609987172599576
+number of samples : 312210
+Test Loss: 0.601205301918618, Test Accuracy: 0.6859613721533583
+Epoch 18/50, Train Loss: 0.5607315247625481
+number of samples : 312210
+Test Loss: 0.6014762052700531, Test Accuracy: 0.6860958969924089
+Epoch 19/50, Train Loss: 0.5605029626177065
+number of samples : 312210
+Test Loss: 0.6015900726577389, Test Accuracy: 0.6861951891355178
+Epoch 20/50, Train Loss: 0.5603819424291484
+number of samples : 312210
+Test Loss: 0.6017902206998095, Test Accuracy: 0.6862592485826847
+Epoch 21/50, Train Loss: 0.5599826769328412
+number of samples : 312210
+Test Loss: 0.6018395070625541, Test Accuracy: 0.6864834566477691
+Epoch 22/50, Train Loss: 0.5599224843360759
+number of samples : 312210
+Test Loss: 0.6019822361948763, Test Accuracy: 0.686400179366452
+Epoch 23/50, Train Loss: 0.5598459515522644
+number of samples : 312210
+Test Loss: 0.6018113375618824, Test Accuracy: 0.6865347042055027
+Epoch 24/50, Train Loss: 0.5596598611801655
+number of samples : 312210
+Test Loss: 0.6017833817360636, Test Accuracy: 0.6865827487908779
+Epoch 25/50, Train Loss: 0.5597521184763151
+number of samples : 312210
+Test Loss: 0.6018980332498559, Test Accuracy: 0.6864738477306941
+Epoch 26/50, Train Loss: 0.559550967713357
+number of samples : 312210
+Test Loss: 0.6022121180799532, Test Accuracy: 0.6865667339290862
+Epoch 27/50, Train Loss: 0.5595441826459738
+number of samples : 312210
+Test Loss: 0.6020535590230859, Test Accuracy: 0.6866404022933282
+Epoch 28/50, Train Loss: 0.5594336044041303
+number of samples : 312210
+Test Loss: 0.6022208478608774, Test Accuracy: 0.6866884468787035
+Epoch 29/50, Train Loss: 0.5593909014154363
+number of samples : 312210
+Test Loss: 0.6017725021085192, Test Accuracy: 0.686739694436437
+Epoch 30/50, Train Loss: 0.5593093149783914
+number of samples : 312210
+Test Loss: 0.6026368948900205, Test Accuracy: 0.686666026072195
+Epoch 31/50, Train Loss: 0.5591290508723361
+number of samples : 312210
+Test Loss: 0.601310381072698, Test Accuracy: 0.6867428974087953
+Epoch 32/50, Train Loss: 0.559083319776524
+number of samples : 312210
+Test Loss: 0.6026887240421611, Test Accuracy: 0.6865795458185195
+Epoch 33/50, Train Loss: 0.55912908276626
+number of samples : 312210
+Test Loss: 0.6016628030421606, Test Accuracy: 0.6867461003811537
+Epoch 34/50, Train Loss: 0.5589873268400477
+number of samples : 312210
+Test Loss: 0.6019669773080669, Test Accuracy: 0.6866788379616284
+Epoch 35/50, Train Loss: 0.5589630014662518
+number of samples : 312210
+Test Loss: 0.6020356197191619, Test Accuracy: 0.6868389865795458
+Epoch 36/50, Train Loss: 0.5588832070718065
+number of samples : 312210
+Test Loss: 0.601876176247808, Test Accuracy: 0.6866404022933282
+Epoch 37/50, Train Loss: 0.5587599386695534
+number of samples : 312210
+Test Loss: 0.6023771800465206, Test Accuracy: 0.6866916498510618
+Epoch 38/50, Train Loss: 0.5587846420153424
+number of samples : 312210
+Test Loss: 0.6027378143245057, Test Accuracy: 0.6867749271323789
+Epoch 39/50, Train Loss: 0.5587542433425648
+number of samples : 312210
+Test Loss: 0.6023122854493345, Test Accuracy: 0.6866307933762532
+Epoch 40/50, Train Loss: 0.558639616518013
+number of samples : 312210
+Test Loss: 0.6024015571606701, Test Accuracy: 0.6867621152429455
+Epoch 41/50, Train Loss: 0.5588674078776961
+number of samples : 312210
+Test Loss: 0.6016444434263121, Test Accuracy: 0.6867461003811537
+Epoch 42/50, Train Loss: 0.5589163876606038
+number of samples : 312210
+Test Loss: 0.602265855448231, Test Accuracy: 0.6866788379616284
+Epoch 43/50, Train Loss: 0.5588946268762304
+number of samples : 312210
+Test Loss: 0.6024327706971444, Test Accuracy: 0.6867749271323789
+Epoch 44/50, Train Loss: 0.5587805583713136
+number of samples : 312210
+Test Loss: 0.6024909577024979, Test Accuracy: 0.6865667339290862
+Epoch 45/50, Train Loss: 0.5588405677769783
+number of samples : 312210
+Test Loss: 0.6028134704709095, Test Accuracy: 0.6865859517632363
+Epoch 46/50, Train Loss: 0.5586515364231631
+number of samples : 312210
+Test Loss: 0.6025896801763286, Test Accuracy: 0.6868165657730374
+Epoch 47/50, Train Loss: 0.5586247804124255
+number of samples : 312210
+Test Loss: 0.6021012669679338, Test Accuracy: 0.6868197687453957
+Epoch 48/50, Train Loss: 0.5586835322156748
+number of samples : 312210
+Test Loss: 0.602277051971417, Test Accuracy: 0.6868101598283207
+Epoch 49/50, Train Loss: 0.5586803348068102
+number of samples : 312210
+Test Loss: 0.6024551170204699, Test Accuracy: 0.6867909419941706
+Epoch 50/50, Train Loss: 0.5586265581217557
+number of samples : 312210
+Test Loss: 0.6021481722147528, Test Accuracy: 0.6868838281925627
+Max accuracy : 0.6868838281925627

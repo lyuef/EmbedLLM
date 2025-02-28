@@ -5,7 +5,8 @@ import pandas as pd
 import numpy as np
 import io
 from contextlib import redirect_stdout
-
+from datetime import datetime
+import os
 if __name__ == "__main__" :
     parser = pm.parser_make()
     args = parser.parse_args()
@@ -17,7 +18,6 @@ if __name__ == "__main__" :
     num_prompts = question_embeddings.shape[0]
     num_models = len(test_data["model_id"].unique())
     model_names = list(np.unique(list(test_data["model_name"])))
-
     train_loader , test_loader = lpd.load_and_process_data(train_data=train_data,test_data=test_data,batch_size=args.batch_size,model_use_train_l=args.model_use_train_l,model_use_train_r=args.model_use_train_r,model_use_test_l=args.model_use_test_l,model_use_test_r=args.model_use_test_r)
     
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -26,7 +26,7 @@ if __name__ == "__main__" :
     captured_output = io.StringIO()
     with redirect_stdout(captured_output):
         print("Initializing model...")
-        model = TextMF_dyn_ML(question_embeddings=question_embeddings, 
+        model = TextMF_dyn(question_embeddings=question_embeddings, 
                    model_embedding_dim=args.embedding_dim, alpha=args.alpha,
                    num_models=num_models, num_prompts=num_prompts,model_embeddings=model_embeddings,is_dyn=args.is_dyn,frozen = args.frozen)
         # model = TextMF(question_embeddings=question_embeddings, 
@@ -39,5 +39,8 @@ if __name__ == "__main__" :
         print("Trainging ... ")
         tr.train(model, train_loader, test_loader, num_epochs=args.num_epochs, lr=args.learning_rate,
             device=device, save_path=args.model_save_path)
-    with open(args.output_save_path, "w", encoding="utf-8") as f:
+    folder_path = "output/" + datetime.now().strftime("%Y-%m-%d")
+    os.makedirs(folder_path,exist_ok=True)
+    file_path = folder_path + "/" + f"MF_dyn_train_l_{args.model_use_train_l}_train_r_{args.model_use_train_r}_test_l_{args.model_use_test_l}_test_r_{args.model_use_test_r}.txt"
+    with open(file_path, "w", encoding="utf-8") as f:
         f.write(captured_output.getvalue())

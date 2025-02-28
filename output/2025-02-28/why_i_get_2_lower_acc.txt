@@ -1,0 +1,22 @@
+Initializing model...
+Epoch 1/3, Train Loss: 0.6791107441172187
+number of samples : 388528
+Test Loss: 0.6493808793622982, Test Accuracy: 0.633727813696825
+number of samples : 312210
+Test Loss: 0.6548623137896968, Test Accuracy: 0.6242272829185485
+number of samples : 76318
+Test Loss: 0.6480768681034864, Test Accuracy: 0.6550355093162818
+Epoch 2/3, Train Loss: 0.6466480774771957
+number of samples : 388528
+Test Loss: 0.6295537868098068, Test Accuracy: 0.6454129432113
+number of samples : 312210
+Test Loss: 0.636534899894915, Test Accuracy: 0.638089747285481
+number of samples : 76318
+Test Loss: 0.6365310379836465, Test Accuracy: 0.6605650043240127
+Epoch 3/3, Train Loss: 0.6299865607510187
+number of samples : 388528
+Test Loss: 0.6137789774288609, Test Accuracy: 0.664505518263806
+number of samples : 312210
+Test Loss: 0.6203914814979551, Test Accuracy: 0.6590692162326639
+number of samples : 76318
+Test Loss: 0.6305368007043206, Test Accuracy: 0.6642076574333708
