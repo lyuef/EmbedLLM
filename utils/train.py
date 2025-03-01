@@ -40,7 +40,7 @@ def train(net, train_loader, test_loader, num_epochs, lr, device, weight_decay=1
         print(f"Model saved to {save_path}")
     
     return max_accuracy
-def train_mutitest(net, train_loader, num_epochs, lr, device, weight_decay=1e-5, save_path=None,*test_loaders):
+def train_mutitest(net, train_loader, num_epochs, lr, device, *test_loaders,weight_decay=1e-5, save_path=None):
     optimizer = Adam(net.parameters(), lr=lr, weight_decay=weight_decay)
     loss_fn = nn.CrossEntropyLoss()
     progress_bar = tqdm(total=num_epochs)
