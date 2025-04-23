@@ -19,6 +19,5 @@ def evaluate(net, test_loader, device):
 
     mean_loss = total_loss / num_samples
     accuracy = correct / num_samples
-    print(f'number of samples : {num_samples}')
     net.train()
     return mean_loss, accuracy

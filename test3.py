@@ -11,7 +11,7 @@ from torch import nn
 from tqdm import tqdm
 from torch.optim import Adam
 import utils.evaluate as eva 
-
+# test 3 ranges of dataset at same time
 if __name__ == "__main__" :
     parser = pm.parser_make()
     args = parser.parse_args()
@@ -43,6 +43,6 @@ if __name__ == "__main__" :
 
     folder_path = "output/" + datetime.now().strftime("%Y-%m-%d")
     os.makedirs(folder_path,exist_ok=True)
-    file_path = folder_path + "/" + f"MF_dyn_train_l_{args.model_use_train_l}_train_r_{args.model_use_train_r}.txt"
+    file_path = folder_path + "/" + f"MF_dyn_train_l_{args.model_use_train_l}_train_r_{args.model_use_train_r}_dyn_{args.is_dyn}_frozen_{args.frozen}.txt"
     with open(file_path, "w", encoding="utf-8") as f:
         f.write(captured_output.getvalue())
