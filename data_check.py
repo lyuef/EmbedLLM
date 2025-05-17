@@ -12,22 +12,39 @@ if __name__ == "__main__" :
     train_data = pd.read_csv(args.train_data_path)
     test_data = pd.read_csv(args.test_data_path)
     
-    total_prompt_count = train_data["prompt_id"].nunique()
-
-    print(f"总共有 {total_prompt_count} 个唯一的 prompt_id。")
-
-    # print(train_data.columns)
-    print(test_data.columns)
-
-    # print(train_data.head())
-    print(test_data.head())
-
-    # captured_output = io.StringIO()
-    # with redirect_stdout(captured_output):
-        
-    # with open(args.output_save_path, "w", encoding="utf-8") as f:
-    #     f.write(captured_output.getvalue())
+    print(train_data.columns)
     
+    print("原始数据列名:", train_data.columns.tolist())
 
+    # 检查每个 model_id 是否与所有 prompt_id 组合存在
+    unique_models = train_data['model_id'].unique()
+    unique_prompts = train_data['prompt_id'].unique()
+
+    print(len(unique_models),len(unique_prompts))
+    
+    # 生成所有可能的组合（笛卡尔积）
+    cross_combinations = pd.MultiIndex.from_product(
+        [unique_models, unique_prompts],
+        names=['model_id', 'prompt_id']
+    ).to_frame(index=False)
+    
+    # 提取实际存在的组合
+    existing_combinations = train_data[['model_id', 'prompt_id']].drop_duplicates()
+    
+    # 通过左连接找出缺失的组合
+    missing_combinations = cross_combinations.merge(
+        existing_combinations,
+        on=['model_id', 'prompt_id'],
+        how='left',
+        indicator=True
+    )
+    missing_combinations = missing_combinations[missing_combinations['_merge'] == 'left_only']
+    
+    # 输出结果
+    if missing_combinations.empty:
+        print("\n所有 model_id 和 prompt_id 的组合均存在。")
+    else:
+        print("\n以下组合缺失:")
+        print(missing_combinations[['model_id', 'prompt_id']].to_string(index=False))
 
     

@@ -12,7 +12,7 @@ from models import Embedllm_dynamic
 torch.manual_seed(42)
 np.random.seed(42)
 random.seed(42)
-
+# train 1 range and test 1 range
 def test(net,test_loader,device) :
 
     test_loss, test_accuracy = eva.evaluate(net, test_loader, device)
