@@ -2,6 +2,7 @@
 import torch 
 from torch.utils.data import Dataset,DataLoader
 import pandas as pd 
+from torch_geometric.data import Data,Dataset
 
 def load_and_process_data(train_data, test_data, batch_size=64 , model_use_train_l = 0,model_use_train_r = 112 , model_use_test_l = 0 , model_use_test_r = 112,shuffle = True):
     
@@ -62,7 +63,7 @@ def load_and_process_data(train_data, test_data, batch_size=64 , model_use_train
     return train_loader, test_loader
 
 def load_and_process_data_mutitest(train_data, test_data, *test_range,batch_size=64 , model_use_train_l = 0,model_use_train_r = 112 ,shuffle = True):
-    
+    """load multi test data"""
     num_prompts = int(max(max(train_data["prompt_id"]), max(test_data["prompt_id"]))) + 1
     
 
