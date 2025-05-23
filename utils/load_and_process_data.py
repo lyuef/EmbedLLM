@@ -120,3 +120,33 @@ def load_and_process_data_mutitest(train_data, test_data, *test_range,batch_size
     test_loader = [test_dataset[i].get_dataloaders(batch_size) for i in range(num_tests)]
 
     return train_loader, tuple(test_loader)
+
+def build_cograph(responses):
+    """build cograph from responses"""
+    n_models = responses.shape[0]
+        
+    # likely matrix
+    agreement = torch.mm(responses.float(), responses.float().T)
+    total = responses.shape[1]
+    likely = agreement / total 
+    likely_norm = F.softmax(likely, dim=1)
+        
+    src = torch.repeat_interleave(torch.arange(n_models), n_models)
+    dst = torch.arange(n_models).repeat(n_models)
+    edge_index = torch.stack([src, dst], dim=0)
+        
+    return Data(
+        x=responses,
+        edge_index=edge_index,
+        edge_weight=likely_norm.flatten()
+    )
+
+def build_response(data) : 
+    model_ids = data["model_id"].unique()
+    
+    num_prompts = int(max(max(train_data["prompt_id"]), max(test_data["prompt_id"]))) + 1
+
+    required_cols = ['model_id','prompt_id','label']
+    data = data[requered_cols]
+    return torch.tensor(data.pivot(index='model_id', columns='prompt_id', values='label').fillna(0).values, dtype=torch.float32)
+
