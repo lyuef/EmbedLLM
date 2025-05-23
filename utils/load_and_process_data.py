@@ -150,3 +150,24 @@ def build_response(data) :
     data = data[requered_cols]
     return torch.tensor(data.pivot(index='model_id', columns='prompt_id', values='label').fillna(0).values, dtype=torch.float32)
 
+
+
+def load_and_process_data_cograph(train_data, test_data, batch_size=64 , model_use_train_l = 0,model_use_train_r = 112 , model_use_test_l = 0 , model_use_test_r = 112,shuffle = True):
+    """load and process data for cograph"""
+    num_prompts = int(max(max(train_data["prompt_id"]), max(test_data["prompt_id"]))) + 1
+    
+
+    model_ids = test_data["model_id"].unique()
+    if shuffle :
+        model_ids = model_ids[torch.randperm(len(model_ids))]
+
+    train_selected_model_ids = model_ids[model_use_train_l:model_use_train_r]
+    test_selected_model_ids = model_ids[model_use_test_l:model_use_test_r]
+
+    train_data = train_data[train_data["model_id"].isin(train_selected_model_ids)]
+    test_data = test_data[test_data["model_id"].isin(test_selected_model_ids)]
+
+    train_responses = build_response(train_data)
+    graphdata = build_cograph(train_responses)
+
+    return graphdata
