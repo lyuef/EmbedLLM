@@ -1,11 +1,231 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from Embedlllm_dynamic import TextMF_dyn
 from torch_geometric.nn import SAGEConv
 from torch_geometric.data import Data
-class GraphSAGE_MF(nn.module) :
-    def __init__(self, question_embeddings, model_embedding_dim, alpha, num_models, num_prompts, text_dim=768, num_classes=2,model_embeddings = None,is_dyn = False):
-        super().__init__()
 
-        self.conv1 = SA
+class GraphSAGE_TextMF_dyn(nn.Module):
+    model_embedding_dim_origin = 232
+    
+    def __init__(self, question_embeddings, model_embedding_dim, alpha, num_models, num_prompts, 
+                 text_dim=768, num_classes=2, model_embeddings=None, is_dyn=False, frozen=False,
+                 hidden_dim=256, num_layers=2, num_train_models=90):
+        super(GraphSAGE_TextMF_dyn, self).__init__()
+        
+        # 动态模型嵌入 (类似TextMF_dyn)
+        self.model_proj = nn.Linear(model_embedding_dim, GraphSAGE_TextMF_dyn.model_embedding_dim_origin)
+        if is_dyn:
+            self.P = nn.Embedding(num_models, model_embedding_dim).requires_grad_(not frozen)
+            self.P.weight.data.copy_(model_embeddings)
+        else:
+            self.P = nn.Embedding(num_models, model_embedding_dim).requires_grad_(not frozen)
+        
+        # GraphSAGE层 (只用于训练模型)
+        self.sage_layers = nn.ModuleList()
+        if num_layers == 1:
+            self.sage_layers.append(SAGEConv(model_embedding_dim, GraphSAGE_TextMF_dyn.model_embedding_dim_origin, aggr='mean'))
+        else:
+            self.sage_layers.append(SAGEConv(model_embedding_dim, hidden_dim, aggr='mean'))
+            for _ in range(num_layers - 2):
+                self.sage_layers.append(SAGEConv(hidden_dim, hidden_dim, aggr='mean'))
+            self.sage_layers.append(SAGEConv(hidden_dim, GraphSAGE_TextMF_dyn.model_embedding_dim_origin, aggr='mean'))
+        
+        # 问题嵌入和分类器 (与TextMF_dyn相同)
+        self.Q = nn.Embedding(num_prompts, text_dim).requires_grad_(False)
+        self.Q.weight.data.copy_(question_embeddings)
+        self.text_proj = nn.Linear(text_dim, GraphSAGE_TextMF_dyn.model_embedding_dim_origin)
+        self.classifier = nn.Linear(GraphSAGE_TextMF_dyn.model_embedding_dim_origin, num_classes)
+        
+        # 参数
+        self.alpha = alpha
+        self.is_dyn = is_dyn
+        self.frozen = frozen
+        self.num_models = num_models
+        self.num_train_models = num_train_models  # 训练模型数量 (前90个)
+        
+        # 存储训练模型的响应矩阵，用于计算未见模型的相似度
+        self.train_responses = None
+        
+    def set_train_responses(self, train_responses):
+        """set train response matrix"""
+        self.train_responses = train_responses
+        
+    def get_unseen_model_representation(self, unseen_responses, k_neighbors=5):
+        """
+        为未见模型生成表示
+        Args:
+            unseen_responses: [batch_size, num_prompts] 未见模型的响应向量
+            k_neighbors: 使用的邻居数量
+        Returns:
+            torch.Tensor: [batch_size, model_embedding_dim_origin] 未见模型的表示
+        """
+        if self.train_responses is None:
+            raise ValueError("use set_train_responses first.")
+        
+        device = unseen_responses.device
+        batch_size = unseen_responses.shape[0]
+        
+        # 计算与训练模型的相似度
+        unseen_norm = F.normalize(unseen_responses.float(), p=2, dim=1)
+        train_norm = F.normalize(self.train_responses.float(), p=2, dim=1).to(device)
+        
+        # [batch_size, num_train_models]
+        similarities = torch.mm(unseen_norm, train_norm.t())
+        
+        # 获取top-k相似的训练模型
+        top_k_values, top_k_indices = torch.topk(similarities, k_neighbors, dim=1)
+        
+        # 获取训练模型的原始嵌入并投影 (不使用GraphSAGE增强，因为这里需要与训练时一致)
+        with torch.no_grad():
+            train_embeddings = self.P.weight[:self.num_train_models]  # 只取前90个训练模型
+            train_embeddings = self.model_proj(train_embeddings)
+            
+        # 使用相似度加权聚合top-k邻居的表示
+        # top_k_indices: [batch_size, k_neighbors]
+        # top_k_values: [batch_size, k_neighbors]
+        
+        # 归一化相似度权重
+        weights = F.softmax(top_k_values, dim=1)  # [batch_size, k_neighbors]
+        
+        # 获取邻居表示
+        neighbor_embeddings = train_embeddings[top_k_indices]  # [batch_size, k_neighbors, embedding_dim]
+        
+        # 加权聚合
+        unseen_representations = torch.sum(neighbor_embeddings * weights.unsqueeze(-1), dim=1)
+        
+        return unseen_representations
+        
+    def forward(self, graph_data, model_ids, prompt_ids, unseen_responses=None, test_mode=False):
+        """
+        前向传播
+        Args:
+            graph_data: 图数据 (只包含训练模型)
+            model_ids: 模型ID
+            prompt_ids: 问题ID
+            unseen_responses: 未见模型的响应矩阵 [batch_size, num_prompts]
+            test_mode: 是否为测试模式
+        """
+        # 1. 获取当前的动态嵌入
+        current_embeddings = self.P.weight  # [num_models, embedding_dim]
+        current_embeddings = self.model_proj(current_embeddings)  # 投影到统一维度
+        
+        # 2. 对训练模型使用GraphSAGE更新嵌入
+        train_embeddings = current_embeddings[:self.num_train_models]  # 只取前90个训练模型
+        edge_index = graph_data.edge_index
+        
+        x = train_embeddings
+        for i, layer in enumerate(self.sage_layers):
+            x = layer(x, edge_index)
+            if i < len(self.sage_layers) - 1:  # 最后一层不加激活函数
+                x = F.relu(x)
+        
+        # 更新训练模型的表示
+        enhanced_train_embeddings = x  # [num_train_models, model_embedding_dim_origin]
+        
+        # 3. 处理模型嵌入
+        batch_size = model_ids.shape[0]
+        model_embeddings = torch.zeros(batch_size, GraphSAGE_TextMF_dyn.model_embedding_dim_origin, 
+                                     device=model_ids.device)
+        
+        # 分别处理训练模型和未见模型
+        train_mask = model_ids < self.num_train_models
+        unseen_mask = model_ids >= self.num_train_models
+        
+        # 训练模型：直接使用GraphSAGE增强的嵌入
+        if train_mask.sum() > 0:
+            train_model_ids = model_ids[train_mask]
+            model_embeddings[train_mask] = enhanced_train_embeddings[train_model_ids]
+        
+        # 未见模型：使用相似度聚合的表示
+        if unseen_mask.sum() > 0:
+            if unseen_responses is None:
+                # 如果没有提供未见模型响应，使用原始嵌入
+                unseen_model_ids = model_ids[unseen_mask]
+                model_embeddings[unseen_mask] = current_embeddings[unseen_model_ids]
+            else:
+                # 使用响应相似度生成表示
+                unseen_batch_responses = unseen_responses[unseen_mask]
+                unseen_representations = self.get_unseen_model_representation(unseen_batch_responses)
+                model_embeddings[unseen_mask] = unseen_representations
+        
+        # 4. 问题嵌入处理
+        q = self.Q(prompt_ids)
+        if not test_mode:
+            q += torch.randn_like(q) * self.alpha
+        q = self.text_proj(q)
+        
+        # 5. 分类
+        return self.classifier(model_embeddings * q)
+    
+    @torch.no_grad()
+    def predict(self, graph_data, model_ids, prompt_ids, unseen_responses=None):
+        logits = self.forward(graph_data, model_ids, prompt_ids, unseen_responses, test_mode=True)
+        return torch.argmax(logits, dim=1)
+
+def build_model_graph(model_responses, model_embeddings, k_neighbors=10, device='cpu'):
+    """
+    构建模型间的相似性图
+    Args:
+        model_responses: [num_models, num_prompts] 模型响应矩阵
+        model_embeddings: [num_models, embedding_dim] 预训练嵌入
+        k_neighbors: 每个节点的邻居数量
+        device: 设备
+    Returns:
+        Data: PyTorch Geometric图数据对象
+    """
+    num_models = model_responses.shape[0]
+    
+    # 计算响应相似度 (余弦相似度)
+    model_responses_norm = F.normalize(model_responses.float(), p=2, dim=1)
+    response_sim = torch.mm(model_responses_norm, model_responses_norm.t())
+    
+    # 计算嵌入相似度
+    model_embeddings_norm = F.normalize(model_embeddings.float(), p=2, dim=1)
+    embed_sim = torch.mm(model_embeddings_norm, model_embeddings_norm.t())
+    
+    # 组合相似度 (可调权重)
+    similarity = 0.7 * response_sim + 0.3 * embed_sim
+    
+    # 构建k-NN图
+    edge_list = []
+    edge_weights = []
+    
+    for i in range(num_models):
+        # 获取top-k相似的邻居 (排除自己)
+        sim_scores = similarity[i]
+        sim_scores[i] = -1  # 排除自己
+        
+        top_k_indices = torch.topk(sim_scores, k_neighbors).indices
+        
+        for j in top_k_indices:
+            edge_list.append([i, j.item()])
+            edge_weights.append(similarity[i, j].item())
+    
+    # 转换为PyTorch Geometric格式
+    edge_index = torch.tensor(edge_list, dtype=torch.long).t().contiguous()
+    edge_weights = torch.tensor(edge_weights, dtype=torch.float)
+    
+    # 创建图数据对象
+    graph_data = Data(
+        x=model_embeddings.to(device),
+        edge_index=edge_index.to(device),
+        edge_attr=edge_weights.to(device)
+    )
+    
+    return graph_data
+
+def update_graph_data(model, original_graph_data):
+    """
+    使用当前的动态嵌入更新图数据
+    """
+    # 获取当前的动态嵌入
+    current_embeddings = model.P.weight.detach()
+    
+    # 更新图数据的节点特征
+    updated_graph_data = Data(
+        x=current_embeddings,
+        edge_index=original_graph_data.edge_index,
+        edge_attr=original_graph_data.edge_attr
+    )
+    
+    return updated_graph_data
