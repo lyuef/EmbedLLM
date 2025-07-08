@@ -1,7 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
-from torch_geometric.nn import SAGEConv
+from torch_geometric.nn import SAGEConv, GATConv
 from torch_geometric.data import Data
 
 class GraphSAGE_TextMF_dyn(nn.Module):
@@ -9,7 +9,7 @@ class GraphSAGE_TextMF_dyn(nn.Module):
     
     def __init__(self, question_embeddings, model_embedding_dim, alpha, num_models, num_prompts, 
                  text_dim=768, num_classes=2, model_embeddings=None, is_dyn=False, frozen=False,
-                 hidden_dim=256, num_layers=2, num_train_models=90):
+                 hidden_dim=256, num_layers=2, num_train_models=90, gnn_type="GraphSAGE", num_heads=8):
         super(GraphSAGE_TextMF_dyn, self).__init__()
         
         # 动态模型嵌入 (类似TextMF_dyn)
@@ -20,15 +20,42 @@ class GraphSAGE_TextMF_dyn(nn.Module):
         else:
             self.P = nn.Embedding(num_models, model_embedding_dim).requires_grad_(not frozen)
         
-        # GraphSAGE层 (只用于训练模型)
-        self.sage_layers = nn.ModuleList()
+        # 图神经网络层 (支持GraphSAGE和GAT)
+        self.gnn_type = gnn_type
+        self.num_heads = num_heads
+        self.gnn_layers = nn.ModuleList()
+        
         if num_layers == 1:
-            self.sage_layers.append(SAGEConv(model_embedding_dim, GraphSAGE_TextMF_dyn.model_embedding_dim_origin, aggr='mean'))
+            if gnn_type == "GAT":
+                self.gnn_layers.append(GATConv(GraphSAGE_TextMF_dyn.model_embedding_dim_origin, 
+                                             GraphSAGE_TextMF_dyn.model_embedding_dim_origin, heads=1))
+            else:  # GraphSAGE
+                self.gnn_layers.append(SAGEConv(GraphSAGE_TextMF_dyn.model_embedding_dim_origin, 
+                                              GraphSAGE_TextMF_dyn.model_embedding_dim_origin, aggr='mean'))
         else:
-            self.sage_layers.append(SAGEConv(GraphSAGE_TextMF_dyn.model_embedding_dim_origin, hidden_dim, aggr='mean'))
+            # 第一层：232 → hidden_dim
+            if gnn_type == "GAT":
+                self.gnn_layers.append(GATConv(GraphSAGE_TextMF_dyn.model_embedding_dim_origin, 
+                                             hidden_dim, heads=num_heads))
+            else:  # GraphSAGE
+                self.gnn_layers.append(SAGEConv(GraphSAGE_TextMF_dyn.model_embedding_dim_origin, 
+                                              hidden_dim, aggr='mean'))
+            
+            # 中间层
             for _ in range(num_layers - 2):
-                self.sage_layers.append(SAGEConv(hidden_dim, hidden_dim, aggr='mean'))
-            self.sage_layers.append(SAGEConv(hidden_dim, GraphSAGE_TextMF_dyn.model_embedding_dim_origin, aggr='mean'))
+                if gnn_type == "GAT":
+                    # GAT中间层：hidden_dim * num_heads → hidden_dim
+                    self.gnn_layers.append(GATConv(hidden_dim * num_heads, hidden_dim, heads=num_heads))
+                else:  # GraphSAGE
+                    self.gnn_layers.append(SAGEConv(hidden_dim, hidden_dim, aggr='mean'))
+            
+            # 最后一层：hidden_dim * num_heads → 232 (对于GAT)
+            if gnn_type == "GAT":
+                self.gnn_layers.append(GATConv(hidden_dim * num_heads, 
+                                             GraphSAGE_TextMF_dyn.model_embedding_dim_origin, heads=1))
+            else:  # GraphSAGE
+                self.gnn_layers.append(SAGEConv(hidden_dim, 
+                                              GraphSAGE_TextMF_dyn.model_embedding_dim_origin, aggr='mean'))
         
         # 问题嵌入和分类器 (与TextMF_dyn相同)
         self.Q = nn.Embedding(num_prompts, text_dim).requires_grad_(False)
@@ -158,11 +185,11 @@ class GraphSAGE_TextMF_dyn(nn.Module):
             extended_edge_index = graph_data.edge_index
             extended_edge_weights = torch.ones(graph_data.edge_index.shape[1], device=device)
         
-        # 7. 对扩展图应用GraphSAGE（只更新未见模型的嵌入）
+        # 7. 对扩展图应用GNN（只更新未见模型的嵌入）
         x = extended_x
-        for i, layer in enumerate(self.sage_layers):
+        for i, layer in enumerate(self.gnn_layers):
             x = layer(x, extended_edge_index)
-            if i < len(self.sage_layers) - 1:
+            if i < len(self.gnn_layers) - 1:
                 x = F.relu(x)
         
         # 8. 返回未见模型的GraphSAGE增强嵌入
@@ -189,9 +216,9 @@ class GraphSAGE_TextMF_dyn(nn.Module):
         edge_index = graph_data.edge_index
         
         x = train_embeddings
-        for i, layer in enumerate(self.sage_layers):
+        for i, layer in enumerate(self.gnn_layers):
             x = layer(x, edge_index)
-            if i < len(self.sage_layers) - 1:  # 最后一层不加激活函数
+            if i < len(self.gnn_layers) - 1:  # 最后一层不加激活函数
                 x = F.relu(x)
         
         # 更新训练模型的表示

@@ -296,10 +296,12 @@ def create_test_args():
     args.learning_rate = 0.0005
     args.weight_decay = 1e-5
     
-    # GraphSAGE参数
+    # GNN参数
     args.hidden_dim = 256
     args.num_layers = 2
     args.k_neighbors = 5
+    args.gnn_type = "GAT"  # 或 "GAT"
+    args.num_heads = 8
     
     # 动态嵌入参数
     args.is_dyn = True
@@ -414,7 +416,9 @@ def run_graphsage_random_test():
             frozen=args.frozen,
             hidden_dim=args.hidden_dim,
             num_layers=args.num_layers,
-            num_train_models=90
+            num_train_models=90,
+            gnn_type=args.gnn_type,
+            num_heads=args.num_heads
         )
         model.to(device)
         
@@ -461,6 +465,8 @@ def run_graphsage_random_test():
             print(f"批次大小: {args.batch_size}")
             print(f"动态嵌入: {args.is_dyn}")
             print(f"冻结参数: {args.frozen}")
+            print(f"GNN类型: {args.gnn_type}")
+            print(f"注意力头数: {args.num_heads}")
             print(f"设备: {device}")
             print(f"模型参数总数: {sum(p.numel() for p in model.parameters()):,}")
             print(f"可训练参数: {sum(p.numel() for p in model.parameters() if p.requires_grad):,}")

@@ -100,3 +100,39 @@ Epoch  36/50 | Train Loss: 0.557992 | Test Loss: 0.576289 | Test Acc: 0.696625 |
 Epoch  36/50 | Train Loss: 0.557992 | Test Loss: 0.576289 | Test Acc: 0.696625 | Best: 0.707277 (Epoch 10)
 Epoch  37/50 | Train Loss: 0.558228 | Test Loss: 0.574422 | Test Acc: 0.702233 | Best: 0.707277 (Epoch 10)
 Epoch  37/50 | Train Loss: 0.558228 | Test Loss: 0.574422 | Test Acc: 0.702233 | Best: 0.707277 (Epoch 10)
+Epoch  38/50 | Train Loss: 0.558111 | Test Loss: 0.577166 | Test Acc: 0.694934 | Best: 0.707277 (Epoch 10)
+Epoch  38/50 | Train Loss: 0.558111 | Test Loss: 0.577166 | Test Acc: 0.694934 | Best: 0.707277 (Epoch 10)
+Epoch  39/50 | Train Loss: 0.557942 | Test Loss: 0.575436 | Test Acc: 0.697686 | Best: 0.707277 (Epoch 10)
+Epoch  39/50 | Train Loss: 0.557942 | Test Loss: 0.575436 | Test Acc: 0.697686 | Best: 0.707277 (Epoch 10)
+Epoch  40/50 | Train Loss: 0.558115 | Test Loss: 0.579645 | Test Acc: 0.688999 | Best: 0.707277 (Epoch 10)
+Epoch  40/50 | Train Loss: 0.558115 | Test Loss: 0.579645 | Test Acc: 0.688999 | Best: 0.707277 (Epoch 10)
+Epoch  41/50 | Train Loss: 0.558067 | Test Loss: 0.574138 | Test Acc: 0.699232 | Best: 0.707277 (Epoch 10)
+Epoch  41/50 | Train Loss: 0.558067 | Test Loss: 0.574138 | Test Acc: 0.699232 | Best: 0.707277 (Epoch 10)
+Epoch  42/50 | Train Loss: 0.558078 | Test Loss: 0.573183 | Test Acc: 0.701185 | Best: 0.707277 (Epoch 10)
+Epoch  42/50 | Train Loss: 0.558078 | Test Loss: 0.573183 | Test Acc: 0.701185 | Best: 0.707277 (Epoch 10)
+Epoch  43/50 | Train Loss: 0.558022 | Test Loss: 0.572634 | Test Acc: 0.701198 | Best: 0.707277 (Epoch 10)
+Epoch  43/50 | Train Loss: 0.558022 | Test Loss: 0.572634 | Test Acc: 0.701198 | Best: 0.707277 (Epoch 10)
+Epoch  44/50 | Train Loss: 0.557817 | Test Loss: 0.571886 | Test Acc: 0.702456 | Best: 0.707277 (Epoch 10)
+Epoch  44/50 | Train Loss: 0.557817 | Test Loss: 0.571886 | Test Acc: 0.702456 | Best: 0.707277 (Epoch 10)
+Epoch  45/50 | Train Loss: 0.558016 | Test Loss: 0.574502 | Test Acc: 0.702993 | Best: 0.707277 (Epoch 10)
+Epoch  45/50 | Train Loss: 0.558016 | Test Loss: 0.574502 | Test Acc: 0.702993 | Best: 0.707277 (Epoch 10)
+Epoch  46/50 | Train Loss: 0.557972 | Test Loss: 0.574635 | Test Acc: 0.700477 | Best: 0.707277 (Epoch 10)
+Epoch  46/50 | Train Loss: 0.557972 | Test Loss: 0.574635 | Test Acc: 0.700477 | Best: 0.707277 (Epoch 10)
+Epoch  47/50 | Train Loss: 0.557856 | Test Loss: 0.572891 | Test Acc: 0.704133 | Best: 0.707277 (Epoch 10)
+Epoch  47/50 | Train Loss: 0.557856 | Test Loss: 0.572891 | Test Acc: 0.704133 | Best: 0.707277 (Epoch 10)
+Epoch  48/50 | Train Loss: 0.557875 | Test Loss: 0.571354 | Test Acc: 0.704801 | Best: 0.707277 (Epoch 10)
+Epoch  48/50 | Train Loss: 0.557875 | Test Loss: 0.571354 | Test Acc: 0.704801 | Best: 0.707277 (Epoch 10)
+Epoch  49/50 | Train Loss: 0.557960 | Test Loss: 0.573845 | Test Acc: 0.700778 | Best: 0.707277 (Epoch 10)
+Epoch  49/50 | Train Loss: 0.557960 | Test Loss: 0.573845 | Test Acc: 0.700778 | Best: 0.707277 (Epoch 10)
+Epoch  50/50 | Train Loss: 0.558073 | Test Loss: 0.574007 | Test Acc: 0.701237 | Best: 0.707277 (Epoch 10)
+Epoch  50/50 | Train Loss: 0.558073 | Test Loss: 0.574007 | Test Acc: 0.701237 | Best: 0.707277 (Epoch 10)
+================================================================================
+训练完成！最佳准确率: 0.707277 (第 10 轮)
+================================================================================
+训练总结:
+最佳测试准确率: 0.707277
+最佳轮次: 10
+最终训练损失: 0.558073
+最终测试准确率: 0.701237
+测试完成时间: 2025-07-08 19:16:54
+================================================================================
