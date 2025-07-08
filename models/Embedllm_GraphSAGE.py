@@ -25,7 +25,7 @@ class GraphSAGE_TextMF_dyn(nn.Module):
         if num_layers == 1:
             self.sage_layers.append(SAGEConv(model_embedding_dim, GraphSAGE_TextMF_dyn.model_embedding_dim_origin, aggr='mean'))
         else:
-            self.sage_layers.append(SAGEConv(model_embedding_dim, hidden_dim, aggr='mean'))
+            self.sage_layers.append(SAGEConv(GraphSAGE_TextMF_dyn.model_embedding_dim_origin, hidden_dim, aggr='mean'))
             for _ in range(num_layers - 2):
                 self.sage_layers.append(SAGEConv(hidden_dim, hidden_dim, aggr='mean'))
             self.sage_layers.append(SAGEConv(hidden_dim, GraphSAGE_TextMF_dyn.model_embedding_dim_origin, aggr='mean'))
@@ -50,9 +50,9 @@ class GraphSAGE_TextMF_dyn(nn.Module):
         """set train response matrix"""
         self.train_responses = train_responses
         
-    def get_unseen_model_representation(self, unseen_responses, k_neighbors=5):
+    def get_unseen_model_representation(self, unseen_responses, k_neighbors=10):
         """
-        为未见模型生成表示
+        为未见模型生成表示(trivial)
         Args:
             unseen_responses: [batch_size, num_prompts] 未见模型的响应向量
             k_neighbors: 使用的邻居数量
@@ -94,6 +94,81 @@ class GraphSAGE_TextMF_dyn(nn.Module):
         unseen_representations = torch.sum(neighbor_embeddings * weights.unsqueeze(-1), dim=1)
         
         return unseen_representations
+    
+    def get_unseen_model_representation_with_graph(self, unseen_responses, enhanced_train_embeddings, graph_data, k_neighbors=5):
+        """
+        为未见模型构建扩展图并应用GraphSAGE生成表示
+        Args:
+            unseen_responses: [batch_size, num_prompts] 未见模型的响应向量
+            enhanced_train_embeddings: [num_train_models, embedding_dim] GraphSAGE增强的训练模型嵌入
+            graph_data: 原始图数据 (只包含训练模型)
+            k_neighbors: 使用的邻居数量
+        Returns:
+            torch.Tensor: [batch_size, model_embedding_dim_origin] 未见模型的GraphSAGE增强表示
+        """
+        if self.train_responses is None:
+            raise ValueError("use set_train_responses first.")
+        
+        device = unseen_responses.device
+        batch_size = unseen_responses.shape[0]
+        num_train = enhanced_train_embeddings.shape[0]
+        
+        # 1. 计算未见模型与训练模型的相似度
+        unseen_norm = F.normalize(unseen_responses.float(), p=2, dim=1)
+        train_norm = F.normalize(self.train_responses.float(), p=2, dim=1).to(device)
+        similarities = torch.mm(unseen_norm, train_norm.t())
+        
+        # 2. 为每个未见模型找到top-k训练模型邻居
+        top_k_values, top_k_indices = torch.topk(similarities, k_neighbors, dim=1)
+        
+        # 3. 为未见模型生成初始嵌入（基于相似度加权聚合）
+        weights = F.softmax(top_k_values, dim=1)  # [batch_size, k_neighbors]
+        neighbor_embeddings = enhanced_train_embeddings[top_k_indices]  # [batch_size, k_neighbors, embedding_dim]
+        initial_unseen_embeddings = torch.sum(neighbor_embeddings * weights.unsqueeze(-1), dim=1)  # [batch_size, embedding_dim]
+        
+        # 4. 构建扩展的节点特征矩阵
+        extended_x = torch.cat([enhanced_train_embeddings, initial_unseen_embeddings], dim=0)  # [num_train + batch_size, embedding_dim]
+        
+        # 5. 构建扩展的边索引（添加未见模型到训练模型的连接）
+        new_edges = []
+        edge_weights = []
+        
+        for i, (top_k_idx, top_k_val) in enumerate(zip(top_k_indices, top_k_values)):
+            unseen_node_id = num_train + i
+            for j, (train_node_id, similarity_score) in enumerate(zip(top_k_idx, top_k_val)):
+                # 双向连接：未见模型 <-> 训练模型
+                new_edges.extend([
+                    [unseen_node_id, train_node_id.item()],
+                    [train_node_id.item(), unseen_node_id]
+                ])
+                # 使用归一化的相似度作为边权重
+                weight = weights[i, j].item()
+                edge_weights.extend([weight, weight])
+        
+        # 6. 合并原始图的边和新边
+        if new_edges:
+            new_edge_index = torch.tensor(new_edges, dtype=torch.long).t().contiguous().to(device)
+            extended_edge_index = torch.cat([graph_data.edge_index, new_edge_index], dim=1)
+            
+            # 合并边权重（原始图的边权重设为1.0）
+            original_edge_weights = torch.ones(graph_data.edge_index.shape[1], device=device)
+            new_edge_weights = torch.tensor(edge_weights, dtype=torch.float, device=device)
+            extended_edge_weights = torch.cat([original_edge_weights, new_edge_weights], dim=0)
+        else:
+            extended_edge_index = graph_data.edge_index
+            extended_edge_weights = torch.ones(graph_data.edge_index.shape[1], device=device)
+        
+        # 7. 对扩展图应用GraphSAGE（只更新未见模型的嵌入）
+        x = extended_x
+        for i, layer in enumerate(self.sage_layers):
+            x = layer(x, extended_edge_index)
+            if i < len(self.sage_layers) - 1:
+                x = F.relu(x)
+        
+        # 8. 返回未见模型的GraphSAGE增强嵌入
+        unseen_enhanced_embeddings = x[num_train:]  # [batch_size, embedding_dim]
+        
+        return unseen_enhanced_embeddings
         
     def forward(self, graph_data, model_ids, prompt_ids, unseen_responses=None, test_mode=False):
         """
@@ -121,7 +196,7 @@ class GraphSAGE_TextMF_dyn(nn.Module):
         
         # 更新训练模型的表示
         enhanced_train_embeddings = x  # [num_train_models, model_embedding_dim_origin]
-        
+
         # 3. 处理模型嵌入
         batch_size = model_ids.shape[0]
         model_embeddings = torch.zeros(batch_size, GraphSAGE_TextMF_dyn.model_embedding_dim_origin, 
@@ -136,16 +211,18 @@ class GraphSAGE_TextMF_dyn(nn.Module):
             train_model_ids = model_ids[train_mask]
             model_embeddings[train_mask] = enhanced_train_embeddings[train_model_ids]
         
-        # 未见模型：使用相似度聚合的表示
+        # 未见模型：使用GraphSAGE增强的相似度聚合表示
         if unseen_mask.sum() > 0:
             if unseen_responses is None:
                 # 如果没有提供未见模型响应，使用原始嵌入
                 unseen_model_ids = model_ids[unseen_mask]
                 model_embeddings[unseen_mask] = current_embeddings[unseen_model_ids]
             else:
-                # 使用响应相似度生成表示
+                # 使用GraphSAGE增强的响应相似度生成表示
                 unseen_batch_responses = unseen_responses[unseen_mask]
-                unseen_representations = self.get_unseen_model_representation(unseen_batch_responses)
+                unseen_representations = self.get_unseen_model_representation_with_graph(
+                    unseen_batch_responses, enhanced_train_embeddings, graph_data
+                )
                 model_embeddings[unseen_mask] = unseen_representations
         
         # 4. 问题嵌入处理
@@ -173,6 +250,10 @@ def build_model_graph(model_responses, model_embeddings, k_neighbors=10, device=
     Returns:
         Data: PyTorch Geometric图数据对象
     """
+    # 确保所有张量都在同一设备上
+    model_responses = model_responses.to(device)
+    model_embeddings = model_embeddings.to(device)
+    
     num_models = model_responses.shape[0]
     
     # 计算响应相似度 (余弦相似度)
@@ -180,11 +261,11 @@ def build_model_graph(model_responses, model_embeddings, k_neighbors=10, device=
     response_sim = torch.mm(model_responses_norm, model_responses_norm.t())
     
     # 计算嵌入相似度
-    model_embeddings_norm = F.normalize(model_embeddings.float(), p=2, dim=1)
-    embed_sim = torch.mm(model_embeddings_norm, model_embeddings_norm.t())
+    # model_embeddings_norm = F.normalize(model_embeddings.float(), p=2, dim=1)
+    # embed_sim = torch.mm(model_embeddings_norm, model_embeddings_norm.t())
     
-    # 组合相似度 (可调权重)
-    similarity = 0.7 * response_sim + 0.3 * embed_sim
+    # 组合相似度 
+    similarity =  response_sim # + 0.3 * embed_sim
     
     # 构建k-NN图
     edge_list = []

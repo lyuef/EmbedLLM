@@ -122,35 +122,6 @@ def load_and_process_data_mutitest(train_data, test_data, *test_range,batch_size
 
     return train_loader, tuple(test_loader)
 
-def build_cograph(responses):
-    """build cograph from responses"""
-    n_models = responses.shape[0]
-        
-    # likely matrix
-    agreement = torch.mm(responses.float(), responses.float().T)
-    total = responses.shape[1]
-    likely = agreement / total 
-    likely_norm = F.softmax(likely, dim=1)
-        
-    src = torch.repeat_interleave(torch.arange(n_models), n_models)
-    dst = torch.arange(n_models).repeat(n_models)
-    edge_index = torch.stack([src, dst], dim=0)
-        
-    return Data(
-        x=responses,
-        edge_index=edge_index,
-        edge_weight=likely_norm.flatten()
-    )
-
-def build_response(data) : 
-    """构建模型响应矩阵"""
-    model_ids = data["model_id"].unique()
-    
-    num_prompts = int(max(data["prompt_id"])) + 1
-
-    required_cols = ['model_id','prompt_id','label']
-    data = data[required_cols]
-    return torch.tensor(data.pivot(index='model_id', columns='prompt_id', values='label').fillna(0).values, dtype=torch.float32)
 
 def build_full_response_matrix(train_data, test_data):
     """
@@ -235,22 +206,3 @@ def get_unseen_model_responses(test_data, unseen_model_ids, all_prompt_ids):
 
 
 
-def load_and_process_data_cograph(train_data, test_data, batch_size=64 , model_use_train_l = 0,model_use_train_r = 112 , model_use_test_l = 0 , model_use_test_r = 112,shuffle = True):
-    """load and process data for cograph"""
-    num_prompts = int(max(max(train_data["prompt_id"]), max(test_data["prompt_id"]))) + 1
-    
-
-    model_ids = test_data["model_id"].unique()
-    if shuffle :
-        model_ids = model_ids[torch.randperm(len(model_ids))]
-
-    train_selected_model_ids = model_ids[model_use_train_l:model_use_train_r]
-    test_selected_model_ids = model_ids[model_use_test_l:model_use_test_r]
-
-    train_data = train_data[train_data["model_id"].isin(train_selected_model_ids)]
-    test_data = test_data[test_data["model_id"].isin(test_selected_model_ids)]
-
-    train_responses = build_response(train_data)
-    graphdata = build_cograph(train_responses)
-
-    return graphdata

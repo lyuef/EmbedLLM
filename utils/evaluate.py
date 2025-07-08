@@ -30,7 +30,7 @@ def evaluate_graphsage(net, graph_data, test_loader, device, unseen_responses=No
         graph_data: 图数据
         test_loader: 测试数据加载器
         device: 设备
-        unseen_responses: 未见模型的响应矩阵 [num_unseen_models, num_prompts]
+        unseen_responses: 未见模型的响应矩阵 [22, num_prompts] (只包含后22个未见模型)
     Returns:
         tuple: (平均损失, 准确率)
     """
@@ -48,7 +48,7 @@ def evaluate_graphsage(net, graph_data, test_loader, device, unseen_responses=No
             batch_unseen_responses = None
             if unseen_responses is not None:
                 # 获取当前batch中未见模型的响应
-                unseen_mask = models >= net.num_train_models
+                unseen_mask = models >= net.num_train_models  # 模型ID >= 90的是未见模型
                 if unseen_mask.sum() > 0:
                     # 构建当前batch的未见模型响应矩阵
                     batch_size = models.shape[0]
@@ -57,9 +57,10 @@ def evaluate_graphsage(net, graph_data, test_loader, device, unseen_responses=No
                     
                     for i, model_id in enumerate(models):
                         if model_id >= net.num_train_models:
-                            # 未见模型：使用对应的响应向量
-                            unseen_idx = model_id - net.num_train_models
-                            if unseen_idx < unseen_responses.shape[0]:
+                            # 未见模型：映射到unseen_responses中的正确索引
+                            # model_id范围是90-111，需要映射到0-21
+                            unseen_idx = model_id.item() - net.num_train_models
+                            if 0 <= unseen_idx < unseen_responses.shape[0]:
                                 batch_unseen_responses[i] = unseen_responses[unseen_idx].to(device)
             
             logits = net(graph_data, models, prompts, batch_unseen_responses, test_mode=True)
