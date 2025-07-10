@@ -4,6 +4,68 @@ import torch.nn.functional as F
 from torch_geometric.nn import SAGEConv, GATConv
 from torch_geometric.data import Data
 
+class GraphContrastiveWithNegatives(nn.Module):
+    def __init__(self, temperature=0.1, num_negatives=5):
+        super().__init__()
+        self.temperature = temperature
+        self.num_negatives = num_negatives
+    
+    def forward(self, node_embeddings, edge_index, edge_weights=None):
+        """
+        负样本挖掘的图对比学习
+        Args:
+            node_embeddings: [num_nodes, embed_dim] 节点表示
+            edge_index: [2, num_edges] 边索引
+            edge_weights: [num_edges] 边权重（可选）
+        """
+        num_nodes = node_embeddings.shape[0]
+        num_edges = edge_index.shape[1]
+        
+        if num_edges == 0 or num_nodes < 2:
+            return torch.tensor(0.0, device=node_embeddings.device, requires_grad=True)
+        
+        # 构建邻接矩阵
+        adj_matrix = torch.zeros(num_nodes, num_nodes, device=node_embeddings.device)
+        for i in range(num_edges):
+            src, dst = edge_index[0, i], edge_index[1, i]
+            adj_matrix[src, dst] = 1
+            adj_matrix[dst, src] = 1  # 无向图
+        
+        embeddings_norm = F.normalize(node_embeddings, p=2, dim=1)
+        total_loss = 0
+        valid_edges = 0
+        
+        for i in range(num_edges):
+            src, dst = edge_index[0, i], edge_index[1, i]
+            
+            # 正样本：相连的节点
+            pos_sim = torch.dot(embeddings_norm[src], embeddings_norm[dst])
+            
+            # 负样本：随机选择不相连的节点
+            non_neighbors = (adj_matrix[src] == 0).nonzero().squeeze()
+            if len(non_neighbors.shape) == 0:  # 只有一个元素
+                non_neighbors = non_neighbors.unsqueeze(0)
+            
+            if len(non_neighbors) > 0:
+                # 选择负样本数量
+                actual_negatives = min(self.num_negatives, len(non_neighbors))
+                neg_indices = non_neighbors[torch.randperm(len(non_neighbors))[:actual_negatives]]
+                
+                # 计算负样本相似度
+                neg_sims = torch.mm(embeddings_norm[src:src+1], embeddings_norm[neg_indices].t()).squeeze()
+                if neg_sims.dim() == 0:  # 只有一个负样本
+                    neg_sims = neg_sims.unsqueeze(0)
+                
+                # InfoNCE损失
+                logits = torch.cat([pos_sim.unsqueeze(0), neg_sims]) / self.temperature
+                labels = torch.zeros(1, dtype=torch.long, device=node_embeddings.device)
+                loss = F.cross_entropy(logits.unsqueeze(0), labels)
+                
+                total_loss += loss
+                valid_edges += 1
+        
+        return total_loss / max(valid_edges, 1)
+
 class GraphSAGE_TextMF_dyn(nn.Module):
     model_embedding_dim_origin = 232
     
@@ -72,6 +134,12 @@ class GraphSAGE_TextMF_dyn(nn.Module):
         
         # 存储训练模型的响应矩阵，用于计算未见模型的相似度
         self.train_responses = None
+        
+        # 图对比学习模块
+        self.graph_contrastive = GraphContrastiveWithNegatives(
+            temperature=0.1, 
+            num_negatives=5
+        )
         
     def set_train_responses(self, train_responses):
         """set train response matrix"""
@@ -259,7 +327,18 @@ class GraphSAGE_TextMF_dyn(nn.Module):
         q = self.text_proj(q)
         
         # 5. 分类
-        return self.classifier(model_embeddings * q)
+        logits = self.classifier(model_embeddings * q)
+        
+        # 6. 图对比学习损失（仅在训练时计算）
+        if not test_mode:
+            graph_contrastive_loss = self.graph_contrastive(
+                enhanced_train_embeddings,
+                graph_data.edge_index,
+                graph_data.edge_attr
+            )
+            return logits, graph_contrastive_loss
+        else:
+            return logits
     
     @torch.no_grad()
     def predict(self, graph_data, model_ids, prompt_ids, unseen_responses=None):

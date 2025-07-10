@@ -206,9 +206,9 @@ def build_unseen_response_matrix_from_train(train_data, shuffled_model_ids, all_
 
 def train_graphsage_with_epoch_testing(model, graph_data, train_loader, test_loader, 
                                      num_epochs, lr, device, unseen_responses=None, 
-                                     weight_decay=1e-5, log_file=None):
+                                     weight_decay=1e-5, log_file=None, contrastive_weight=0.1):
     """
-    训练GraphSAGE模型，每个epoch后进行测试
+    训练GraphSAGE模型，每个epoch后进行测试，支持图对比学习
     """
     optimizer = Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
     loss_fn = nn.CrossEntropyLoss()
@@ -216,6 +216,7 @@ def train_graphsage_with_epoch_testing(model, graph_data, train_loader, test_loa
     # 记录训练历史
     train_history = []
     test_history = []
+    contrastive_loss_history = []
     max_accuracy = 0
     best_epoch = 0
     
@@ -226,6 +227,8 @@ def train_graphsage_with_epoch_testing(model, graph_data, train_loader, test_loa
         # 训练阶段
         model.train()
         total_loss = 0
+        total_main_loss = 0
+        total_contrastive_loss = 0
         num_batches = 0
         
         progress_bar = tqdm(train_loader, desc=f"Epoch {epoch+1}/{num_epochs}")
@@ -239,17 +242,41 @@ def train_graphsage_with_epoch_testing(model, graph_data, train_loader, test_loa
                 continue
             
             optimizer.zero_grad()
-            logits = model(graph_data, models[train_mask], prompts[train_mask], test_mode=False)
-            loss = loss_fn(logits, labels[train_mask])
-            loss.backward()
+            
+            # 前向传播，获取logits和图对比学习损失
+            output = model(graph_data, models[train_mask], prompts[train_mask], test_mode=False)
+            
+            if isinstance(output, tuple):
+                # 训练模式：返回(logits, contrastive_loss)
+                logits, contrastive_loss = output
+            else:
+                # 兼容性：如果只返回logits
+                logits = output
+                contrastive_loss = torch.tensor(0.0, device=device)
+            
+            # 主任务损失
+            main_loss = loss_fn(logits, labels[train_mask])
+            
+            # 总损失 = 主任务损失 + 图对比学习损失
+            total_batch_loss = main_loss + contrastive_weight * contrastive_loss
+            
+            total_batch_loss.backward()
             optimizer.step()
 
-            total_loss += loss.item()
+            total_loss += total_batch_loss.item()
+            total_main_loss += main_loss.item()
+            total_contrastive_loss += contrastive_loss.item()
             num_batches += 1
             
-            progress_bar.set_postfix({'loss': f'{loss.item():.4f}'})
+            progress_bar.set_postfix({
+                'total': f'{total_batch_loss.item():.4f}',
+                'main': f'{main_loss.item():.4f}',
+                'contrast': f'{contrastive_loss.item():.4f}'
+            })
         
         train_loss = total_loss / num_batches if num_batches > 0 else 0
+        avg_main_loss = total_main_loss / num_batches if num_batches > 0 else 0
+        avg_contrastive_loss = total_contrastive_loss / num_batches if num_batches > 0 else 0
         
         # 测试阶段
         model.eval()
@@ -263,9 +290,10 @@ def train_graphsage_with_epoch_testing(model, graph_data, train_loader, test_loa
         # 记录历史
         train_history.append(train_loss)
         test_history.append(test_accuracy)
+        contrastive_loss_history.append(avg_contrastive_loss)
         
         # 输出结果
-        result_line = f"Epoch {epoch+1:3d}/{num_epochs} | Train Loss: {train_loss:.6f} | Test Loss: {test_loss:.6f} | Test Acc: {test_accuracy:.6f} | Best: {max_accuracy:.6f} (Epoch {best_epoch})"
+        result_line = f"Epoch {epoch+1:3d}/{num_epochs} | Train Loss: {train_loss:.6f} (Main: {avg_main_loss:.6f}, Contrast: {avg_contrastive_loss:.6f}) | Test Loss: {test_loss:.6f} | Test Acc: {test_accuracy:.6f} | Best: {max_accuracy:.6f} (Epoch {best_epoch})"
         print(result_line)
         
         # 如果有日志文件，也写入文件
@@ -276,7 +304,7 @@ def train_graphsage_with_epoch_testing(model, graph_data, train_loader, test_loa
     print("=" * 80)
     print(f"训练完成！最佳准确率: {max_accuracy:.6f} (第 {best_epoch} 轮)")
     
-    return max_accuracy, best_epoch, train_history, test_history
+    return max_accuracy, best_epoch, train_history, test_history, contrastive_loss_history
 
 def create_test_args():
     """创建测试参数"""
@@ -476,12 +504,20 @@ def run_graphsage_random_test():
             print("=" * 80)
             
             # 开始训练
-            max_acc, best_epoch, train_history, test_history = train_graphsage_with_epoch_testing(
+            result = train_graphsage_with_epoch_testing(
                 model, graph_data, train_loader, test_loader,
                 num_epochs=args.num_epochs, lr=args.learning_rate,
                 device=device, unseen_responses=unseen_responses.to(device),
-                weight_decay=args.weight_decay, log_file=tee_output.file
+                weight_decay=args.weight_decay, log_file=tee_output.file,
+                contrastive_weight=0.1  # 图对比学习权重
             )
+            
+            # 处理返回值（兼容新旧版本）
+            if len(result) == 5:
+                max_acc, best_epoch, train_history, test_history, contrastive_loss_history = result
+            else:
+                max_acc, best_epoch, train_history, test_history = result
+                contrastive_loss_history = []
             
             print("=" * 80)
             print("训练总结:")
